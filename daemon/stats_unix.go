@@ -326,7 +326,7 @@ func getSystemCPUUsage() (cpuUsage uint64, cpuNum uint32, _ error) {
 	}
 	defer f.Close()
 
-	rdr := bufio.NewReader(f)
+	rdr := bufio.NewReaderSize(f, 1024)
 
 	for {
 		data, isPrefix, err := rdr.ReadLine()
