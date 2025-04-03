@@ -329,15 +329,18 @@ func getSystemCPUUsage() (cpuUsage uint64, cpuNum uint32, _ error) {
 	rdr := bufio.NewReaderSize(f, 1024)
 
 	for {
-		data, isPrefix, err := rdr.ReadLine()
+		data, isPartial, err := rdr.ReadLine()
 
 		if err != nil {
 			return 0, 0, fmt.Errorf("error scanning '/proc/stat' file: %w", err)
 		}
+		if isPartial {
+			continue // Ignore all lines that are too long, because we assume cpu* records won't exceed the buffer size
+		}
 
 		line := string(data)
 
-		if isPrefix || len(line) < 4 || line[:3] != "cpu" {
+		if len(line) < 4 || line[:3] != "cpu" {
 			break // Assume all cpu* records are at the front, like glibc https://github.com/bminor/glibc/blob/5d00c201b9a2da768a79ea8d5311f257871c0b43/sysdeps/unix/sysv/linux/getsysstats.c#L108-L135
 		}
 		if line[3] == ' ' {
