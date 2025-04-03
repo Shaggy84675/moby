@@ -330,6 +330,11 @@ func getSystemCPUUsage() (cpuUsage uint64, cpuNum uint32, _ error) {
 
 	for {
 		data, isPrefix, err := rdr.ReadLine()
+
+		if err != nil {
+			return 0, 0, fmt.Errorf("error scanning '/proc/stat' file: %w", err)
+		}
+
 		line := string(data)
 
 		if isPrefix || len(line) < 4 || line[:3] != "cpu" {
@@ -353,9 +358,6 @@ func getSystemCPUUsage() (cpuUsage uint64, cpuNum uint32, _ error) {
 		}
 		if '0' <= line[3] && line[3] <= '9' {
 			cpuNum++
-		}
-		if err != nil {
-			return 0, 0, fmt.Errorf("error scanning '/proc/stat' file: %w", err)
 		}
 	}
 	return cpuUsage, cpuNum, nil
